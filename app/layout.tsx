@@ -1,26 +1,32 @@
-import type { Metadata } from "next";
-import "../styles/globals.css";
+import './globals.css';
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Napkin Planner ✨",
-  description: "Bounce business ideas and get a 1‑page napkin plan.",
+  title: 'BizNapkin',
+  description: 'Back-of-the-napkin business viability calculator',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen relative text-slate-800">
-        {/* Modern gradient background */}
-        <div className="fixed inset-0 bg-mesh-gradient opacity-60" />
-        <div className="fixed inset-0 bg-dot-grid" />
-        
-        {/* Floating orbs */}
-        <div className="pointer-events-none fixed -top-32 -left-32 h-96 w-96 rounded-full bg-gradient-to-br from-purple-400/30 to-pink-500/30 blur-3xl float-animation" />
-        <div className="pointer-events-none fixed -bottom-32 -right-32 h-96 w-96 rounded-full bg-gradient-to-br from-cyan-400/30 to-blue-500/30 blur-3xl float-animation" style={{ animationDelay: '1s' }} />
-        <div className="pointer-events-none fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-64 w-64 rounded-full bg-gradient-to-br from-emerald-400/20 to-teal-500/20 blur-3xl float-animation" style={{ animationDelay: '2s' }} />
-
-        <div className="relative max-w-4xl mx-auto px-6 py-12">{children}</div>
+      <body className="min-h-screen text-gray-900 antialiased bg-pattern">
+        <header className="glass border-0 shadow-sm">
+          <div className="mx-auto max-w-4xl px-4 py-4 flex items-center justify-between">
+            <a href="/" className="font-bold text-xl gradient-text">BizNapkin</a>
+            <nav className="text-sm space-x-6">
+              <a href="/" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">Calculator</a>
+              <a href="#" className="text-gray-700 hover:text-purple-600 font-medium transition-colors">About</a>
+            </nav>
+          </div>
+        </header>
+        <main className="mx-auto max-w-5xl px-4 py-8">{children}</main>
+        <footer className="glass border-0 mt-12">
+          <div className="mx-auto max-w-4xl px-4 py-6 text-sm text-gray-600 text-center">
+            © {new Date().getFullYear()} BizNapkin - Built with ❤️ for entrepreneurs
+          </div>
+        </footer>
       </body>
     </html>
   );
 }
+

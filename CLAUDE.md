@@ -2,50 +2,62 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Development Commands
+## Project Overview
 
-**Working Directory**: All commands should be run from `napkin-next/`
+BizNapkin is a business viability calculator built with Next.js 14 that helps entrepreneurs quickly assess business ideas using back-of-the-napkin calculations. The app provides instant financial metrics (revenue, profit, break-even) from basic business parameters.
 
-- **Development server**: `npm run dev` (runs on port 3000)
-- **Build**: `npm run build`
-- **Production server**: `npm start`
-- **Linting**: `npm run lint`
+## Architecture
 
-## Architecture Overview
+- **Frontend**: Next.js 14 with App Router and React Server Components
+- **Styling**: Tailwind CSS with utility-first approach
+- **Calculations**: Client-side only for speed, implemented in `/lib/calculations.ts`
+- **AI Integration**: Gemini API via `/app/api/gemini/route.ts` for parameter extraction
+- **Deployment**: Vercel with auto-deployment from main branch
 
-This is a Next.js application that generates napkin business plans using Google's Gemini AI models.
+## Key File Structure
 
-### Core Structure
+```
+app/
+  ├── calculator/page.tsx    # Main calculator interface
+  ├── api/gemini/route.ts    # AI endpoint for parameter extraction
+  ├── layout.tsx             # Root layout
+  └── page.tsx               # Landing page
+components/
+  ├── BreakEvenChart.tsx     # Profit visualization
+  └── ResultsTable.tsx       # Financial metrics display
+lib/
+  └── calculations.ts        # Core business calculations
+```
 
-- **Frontend**: Single-page React application at `app/page.tsx` with Tailwind CSS
-- **API Layer**: Two main endpoints in `app/api/`:
-  - `/api/research` - Analyzes business ideas and extracts parameters
-  - `/api/plan` - Generates napkin business plans from parameters
-- **AI Integration**: `lib/gemini.ts` handles all Gemini API calls via REST
-- **Business Logic**: 
-  - `lib/prompts.ts` contains prompt templates
-  - `components/QuickMath.tsx` calculates break-even analysis
-  - `components/ScenarioCard.tsx` manages individual planning scenarios
+## Common Commands
 
-### Key Features
+```bash
+npm run dev      # Start development server
+npm run build    # Build for production
+npm run start    # Start production server
+npm run format   # Format code with Prettier
+```
 
-- **Research → Parameters**: AI extracts structured parameters from business ideas
-- **Quick Math**: Break-even calculation (fixed costs / (price × margin))
-- **Scenario Duplication**: Compare multiple variations of the same business idea
-- **Parameter Editing**: Modify AI-extracted parameters before plan generation
+## Core Calculations
 
-### Configuration
+All financial calculations are in `lib/calculations.ts`:
+- Revenue = price × customers
+- Gross Profit = revenue × margin%
+- Net Profit = gross profit - fixed costs
+- Break-even = fixed costs ÷ (price × margin%)
 
-Environment variables (set in `.env.local`):
-- `GEMINI_API_KEY` - Required for AI functionality
-- `RESEARCH_MODEL` - Model for parameter extraction (default: gemini-1.5-flash)
-- `PLAN_MODEL` - Model for plan generation (default: gemini-1.5-flash)
+## Development Notes
 
-### Data Flow
+- All calculations happen client-side for performance
+- AI integration extracts business parameters from natural language descriptions
+- Currency detection based on user locale
+- Forms use controlled components with immediate calculation updates
+- No backend persistence - uses localStorage for session data
 
-1. User enters business idea → `/api/research` extracts parameters
-2. User can edit parameters and run Quick Math
-3. User duplicates scenarios to compare variations
-4. `/api/plan` generates napkin business plans using template system
+## Styling Conventions
 
-The app uses TypeScript throughout with strict mode enabled and path aliases (`@/*` maps to root directory).
+- Tailwind utility classes throughout
+- Consistent spacing with space-y-* and gap-*
+- Form inputs: `rounded border p-2 text-sm`
+- Buttons: `rounded bg-black px-3 py-1.5 text-white text-sm hover:bg-gray-800`
+- run the build after completing the task
