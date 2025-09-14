@@ -13,6 +13,11 @@ Required output JSON keys (snake_case):
 - average_price: number in local currency
 - gross_margin_percent: number 0–100
 - fixed_monthly_costs_total: number in local currency
+- rent_monthly: number in local currency
+- salaries_monthly: number in local currency
+- utilities_monthly: number in local currency
+- other_fixed_costs_monthly: number in local currency
+- variable_cost_per_unit: number in local currency
 - variable_cost_assumptions: short notes
 - target_customers: integer per month
 - business_analysis: 2-3 sentence evaluation of viability, key opportunities, and potential challenges
@@ -32,6 +37,11 @@ Rules:
   "average_price": 50,
   "gross_margin_percent": 60,
   "fixed_monthly_costs_total": 2000,
+  "rent_monthly": 800,
+  "salaries_monthly": 1000,
+  "utilities_monthly": 150,
+  "other_fixed_costs_monthly": 50,
+  "variable_cost_per_unit": 20,
   "variable_cost_assumptions": "notes here",
   "target_customers": 200,
   "business_analysis": "Brief evaluation of viability, opportunities, and challenges."

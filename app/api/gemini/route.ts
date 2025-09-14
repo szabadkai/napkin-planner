@@ -42,20 +42,15 @@ export async function POST(req: Request) {
 
         // Enhance system prompt with context information
         const contextInfo = context || {};
-        const locationText = contextInfo.coords
-            ? `${contextInfo.region || 'Unknown'} (GPS: ${contextInfo.coords.lat.toFixed(2)}, ${contextInfo.coords.lon.toFixed(2)})`
-            : (contextInfo.region || 'Unknown');
 
         const enhancedSystemPrompt = [
             systemPrompt,
             "\n\n--- CONTEXT INFORMATION ---",
-            `User's Location/Region: ${locationText}`,
+            `User's Region: ${contextInfo.region || 'Unknown'}`,
             `User's Locale: ${contextInfo.locale || 'Unknown'}`,
             `User's Timezone: ${contextInfo.timeZone || 'Unknown'}`,
             `Detected Currency: ${contextInfo.currency || 'USD'}`,
-            contextInfo.coords ? `Geographic Coordinates: ${contextInfo.coords.lat}, ${contextInfo.coords.lon}` : "",
-            "\nPlease use this context to provide region-appropriate pricing, costs, and business assumptions. Consider local market conditions, typical wages, rent costs, and business practices for the user's region when suggesting defaults.",
-            contextInfo.coords ? "With GPS coordinates available, you can be more precise about local market conditions." : ""
+            "\nPlease use this context to provide region-appropriate pricing, costs, and business assumptions. Consider local market conditions, typical wages, rent costs, and business practices for the user's region when suggesting defaults."
         ].filter(line => line).join("\n");
 
         const contents = [

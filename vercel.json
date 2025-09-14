@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "napkin-planner",
+  "builds": [
+    {
+      "src": "next.config.mjs",
+      "use": "@vercel/next"
+    }
+  ]
+}

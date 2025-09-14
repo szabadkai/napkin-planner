@@ -29,6 +29,13 @@ export default function HomePage() {
   const [businessAnalysis, setBusinessAnalysis] = useState('');
   const [hasCompletedAnalysis, setHasCompletedAnalysis] = useState(false);
 
+  // Detailed cost breakdown
+  const [rentMonthly, setRentMonthly] = useState(800);
+  const [salariesMonthly, setSalariesMonthly] = useState(1000);
+  const [utilitiesMonthly, setUtilitiesMonthly] = useState(150);
+  const [otherFixedCosts, setOtherFixedCosts] = useState(50);
+  const [variableCostPerUnit, setVariableCostPerUnit] = useState(20);
+
   useEffect(() => {
     setMounted(true);
 
@@ -59,21 +66,42 @@ export default function HomePage() {
     setCurrency(initialCurrency);
   }, []);
 
+  // Keep fixedMonthlyCosts in sync with detailed breakdown
+  useEffect(() => {
+    const newTotal = rentMonthly + salariesMonthly + utilitiesMonthly + otherFixedCosts;
+    if (newTotal !== fixedMonthlyCosts) {
+      setFixedMonthlyCosts(newTotal);
+    }
+  }, [rentMonthly, salariesMonthly, utilitiesMonthly, otherFixedCosts]);
+
   const revenue = useMemo(
     () => calculateRevenue(averagePrice, targetCustomers),
     [averagePrice, targetCustomers]
   );
+
+  const totalVariableCosts = useMemo(
+    () => variableCostPerUnit * targetCustomers,
+    [variableCostPerUnit, targetCustomers]
+  );
+
+  const totalFixedCosts = useMemo(
+    () => rentMonthly + salariesMonthly + utilitiesMonthly + otherFixedCosts,
+    [rentMonthly, salariesMonthly, utilitiesMonthly, otherFixedCosts]
+  );
+
   const grossProfit = useMemo(
-    () => calculateGrossProfit(revenue, grossMarginPercent),
-    [revenue, grossMarginPercent]
+    () => revenue - totalVariableCosts,
+    [revenue, totalVariableCosts]
   );
+
   const netProfit = useMemo(
-    () => calculateNetProfit(grossProfit, fixedMonthlyCosts),
-    [grossProfit, fixedMonthlyCosts]
+    () => grossProfit - totalFixedCosts,
+    [grossProfit, totalFixedCosts]
   );
+
   const breakEven = useMemo(
-    () => calculateBreakEvenCustomers(fixedMonthlyCosts, averagePrice, grossMarginPercent),
-    [fixedMonthlyCosts, averagePrice, grossMarginPercent]
+    () => calculateBreakEvenCustomers(totalFixedCosts, averagePrice, grossMarginPercent),
+    [totalFixedCosts, averagePrice, grossMarginPercent]
   );
 
   const getLocationInfo = async () => {
@@ -193,6 +221,13 @@ export default function HomePage() {
           if (parsed.business_idea) setBusinessIdea(String(parsed.business_idea));
           if (parsed.business_analysis) setBusinessAnalysis(String(parsed.business_analysis));
 
+          // Detailed cost breakdown
+          if (parsed.rent_monthly) setRentMonthly(Number(parsed.rent_monthly));
+          if (parsed.salaries_monthly) setSalariesMonthly(Number(parsed.salaries_monthly));
+          if (parsed.utilities_monthly) setUtilitiesMonthly(Number(parsed.utilities_monthly));
+          if (parsed.other_fixed_costs_monthly) setOtherFixedCosts(Number(parsed.other_fixed_costs_monthly));
+          if (parsed.variable_cost_per_unit) setVariableCostPerUnit(Number(parsed.variable_cost_per_unit));
+
           console.log('Setting currency to:', detectedCurrency);
           setCurrency(detectedCurrency);
           setHasCompletedAnalysis(true);
@@ -210,29 +245,30 @@ export default function HomePage() {
   };
 
   const showCalculations = (aiResult?.text && (businessIdea || location)) ||
-    (averagePrice !== 20 || grossMarginPercent !== 60 || fixedMonthlyCosts !== 2000 || targetCustomers !== 200);
+    (averagePrice !== 20 || grossMarginPercent !== 60 || fixedMonthlyCosts !== 2000 || targetCustomers !== 200 ||
+     rentMonthly !== 800 || salariesMonthly !== 1000 || utilitiesMonthly !== 150 || otherFixedCosts !== 50 || variableCostPerUnit !== 20);
 
   return (
     <div className="space-y-8">
       <section className="text-center space-y-6 mb-12">
-        <h1 className="text-5xl font-bold gradient-text mb-4">From idea to numbers in 60 seconds</h1>
-        <p className="text-xl text-gray-700 max-w-3xl mx-auto">
+        <h1 className="text-5xl md:text-6xl font-black gradient-text mb-4 tracking-tight">From idea to numbers in 60 seconds</h1>
+        <p className="text-xl md:text-2xl text-gray-700 max-w-3xl mx-auto font-medium leading-relaxed">
           Get break-even, costs, customer volumes, and market sizing instantly with AI-powered calculations
         </p>
       </section>
 
       <section className="space-y-6">
-        <div className="glass rounded-2xl p-8 shadow-xl max-w-3xl mx-auto">
+        <div className="glass rounded-2xl p-8 shadow-xl max-w-2xl mx-auto">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
-              <span className="text-white text-2xl font-bold">✨</span>
+            <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg border-4 border-white">
+              <span className="text-white text-3xl font-bold">📊</span>
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Describe Your Business Idea</h2>
             <p className="text-gray-600">Tell us about your business concept and location</p>
           </div>
 
           <textarea
-            className="w-full rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 p-6 text-lg bg-white/50 backdrop-blur transition-all resize-none"
+            className="w-full rounded-xl border-2 border-gray-200 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 p-6 text-lg bg-white/80 backdrop-blur transition-all resize-none shadow-sm hover:shadow-md font-medium placeholder-gray-500"
             rows={6}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
@@ -240,27 +276,54 @@ export default function HomePage() {
           />
 
           {/* Value Proposition Panel */}
-          <div className="mt-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 text-center">Here's what you'll get:</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="mt-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-8 border border-green-200 shadow-sm">
+            <h3 className="text-lg font-semibold text-gray-800 mb-6 text-center">Here's what you'll get:</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
                   <span className="text-white text-sm font-bold">✓</span>
                 </div>
-                <span className="font-medium text-gray-700">Monthly break-even</span>
+                <span className="font-semibold text-gray-800">Monthly break-even</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
                   <span className="text-white text-sm font-bold">✓</span>
                 </div>
-                <span className="font-medium text-gray-700">Customer volumes needed</span>
+                <span className="font-semibold text-gray-800">Customer volumes needed</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm">
                   <span className="text-white text-sm font-bold">✓</span>
                 </div>
-                <span className="font-medium text-gray-700">Market size snapshot</span>
+                <span className="font-semibold text-gray-800">Market size snapshot</span>
               </div>
+            </div>
+
+            {/* Sample Output Preview */}
+            <div className="bg-white rounded-lg p-4 border border-gray-200 shadow-sm">
+              <div className="text-xs font-medium text-gray-500 mb-3 text-center">Sample Output Preview:</div>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">💰 Monthly Revenue</span>
+                  <span className="font-bold text-blue-600">$8,000</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">📈 Gross Profit</span>
+                  <span className="font-bold text-emerald-600">$4,800</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">✅ Net Profit</span>
+                  <span className="font-bold text-green-600 bg-green-50 px-2 py-1 rounded">$2,800</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600">🎯 Break-even</span>
+                  <span className="font-bold text-purple-600 bg-purple-50 px-2 py-1 rounded">84 customers</span>
+                </div>
+              </div>
+              <div className="mt-3 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-emerald-400 to-green-500 rounded-full" style={{width: '75%'}}></div>
+              </div>
+              <div className="text-xs text-center text-gray-500 mt-1">Profitable! 25 customers above break-even</div>
             </div>
           </div>
 
@@ -268,12 +331,17 @@ export default function HomePage() {
             <button
               onClick={onAiStart}
               disabled={isLoading || !prompt.trim()}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 mx-auto text-lg"
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-3 mx-auto text-lg border-2 border-transparent hover:border-indigo-300"
             >
               {isLoading && (
                 <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               )}
-              {isLoading ? 'Crunching Your Numbers...' : 'Show Me My Numbers'}
+              {isLoading ? 'Crunching Your Numbers...' : (
+                <>
+                  <span>Show Me My Numbers</span>
+                  <span className="text-xl">📊</span>
+                </>
+              )}
             </button>
 
             <div className="mt-4 text-center text-sm text-gray-600">
@@ -319,42 +387,113 @@ export default function HomePage() {
               value={location}
               onChange={e=>setLocation(e.target.value)}
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">💰 Average Price</label>
-                <input
-                  type="number"
-                  className="w-full rounded-xl border-2 border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 p-3 text-sm bg-white/50 backdrop-blur transition-all"
-                  value={averagePrice}
-                  onChange={e=>setAveragePrice(Number(e.target.value))}
-                />
+            <div className="space-y-6">
+              {/* Revenue Section */}
+              <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <span className="text-blue-600">💰</span>
+                  Revenue
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Average Price</label>
+                    <input
+                      type="number"
+                      className="w-full rounded-xl border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 p-3 text-sm bg-white/80 backdrop-blur transition-all"
+                      value={averagePrice}
+                      onChange={e=>setAveragePrice(Number(e.target.value))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Target Customers/Month</label>
+                    <input
+                      type="number"
+                      className="w-full rounded-xl border-2 border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 p-3 text-sm bg-white/80 backdrop-blur transition-all"
+                      value={targetCustomers}
+                      onChange={e=>setTargetCustomers(Number(e.target.value))}
+                    />
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">📈 Gross Margin %</label>
-                <input
-                  type="number"
-                  className="w-full rounded-xl border-2 border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100 p-3 text-sm bg-white/50 backdrop-blur transition-all"
-                  value={grossMarginPercent}
-                  onChange={e=>setGrossMarginPercent(Number(e.target.value))}
-                />
+
+              {/* Fixed Costs Section */}
+              <div className="bg-red-50 rounded-xl p-4 border border-red-200">
+                <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <span className="text-red-600">🏢</span>
+                  Fixed Monthly Costs
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Rent</label>
+                    <input
+                      type="number"
+                      className="w-full rounded-xl border-2 border-gray-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 p-3 text-sm bg-white/80 backdrop-blur transition-all"
+                      value={rentMonthly}
+                      onChange={e=>setRentMonthly(Number(e.target.value))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Salaries</label>
+                    <input
+                      type="number"
+                      className="w-full rounded-xl border-2 border-gray-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 p-3 text-sm bg-white/80 backdrop-blur transition-all"
+                      value={salariesMonthly}
+                      onChange={e=>setSalariesMonthly(Number(e.target.value))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Utilities</label>
+                    <input
+                      type="number"
+                      className="w-full rounded-xl border-2 border-gray-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 p-3 text-sm bg-white/80 backdrop-blur transition-all"
+                      value={utilitiesMonthly}
+                      onChange={e=>setUtilitiesMonthly(Number(e.target.value))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Other Fixed Costs</label>
+                    <input
+                      type="number"
+                      className="w-full rounded-xl border-2 border-gray-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 p-3 text-sm bg-white/80 backdrop-blur transition-all"
+                      value={otherFixedCosts}
+                      onChange={e=>setOtherFixedCosts(Number(e.target.value))}
+                    />
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-red-200">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-gray-700">Total Fixed Costs:</span>
+                    <span className="font-bold text-red-700">{new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(rentMonthly + salariesMonthly + utilitiesMonthly + otherFixedCosts)}</span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">🏢 Fixed Monthly Costs</label>
-                <input
-                  type="number"
-                  className="w-full rounded-xl border-2 border-gray-200 focus:border-red-400 focus:ring-2 focus:ring-red-100 p-3 text-sm bg-white/50 backdrop-blur transition-all"
-                  value={fixedMonthlyCosts}
-                  onChange={e=>setFixedMonthlyCosts(Number(e.target.value))}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">👥 Target Customers/Month</label>
-                <input
-                  type="number"
-                  className="w-full rounded-xl border-2 border-gray-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-100 p-3 text-sm bg-white/50 backdrop-blur transition-all"
-                  value={targetCustomers}
-                  onChange={e=>setTargetCustomers(Number(e.target.value))}
-                />
+
+              {/* Variable Costs Section */}
+              <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
+                <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                  <span className="text-orange-600">📦</span>
+                  Variable Costs
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Cost Per Unit/Service</label>
+                    <input
+                      type="number"
+                      className="w-full rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 p-3 text-sm bg-white/80 backdrop-blur transition-all"
+                      value={variableCostPerUnit}
+                      onChange={e=>setVariableCostPerUnit(Number(e.target.value))}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Gross Margin %</label>
+                    <input
+                      type="number"
+                      className="w-full rounded-xl border-2 border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 p-3 text-sm bg-white/80 backdrop-blur transition-all"
+                      value={grossMarginPercent}
+                      onChange={e=>setGrossMarginPercent(Number(e.target.value))}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
             <div className="w-32">
@@ -386,6 +525,12 @@ export default function HomePage() {
               netProfit={netProfit}
               breakEvenCustomers={breakEven}
               currency={currency}
+              rentMonthly={rentMonthly}
+              salariesMonthly={salariesMonthly}
+              utilitiesMonthly={utilitiesMonthly}
+              otherFixedCosts={otherFixedCosts}
+              variableCostPerUnit={variableCostPerUnit}
+              targetCustomers={targetCustomers}
             />
             <BreakEvenChart currentCustomers={targetCustomers} breakEvenCustomers={breakEven} />
           </div>
