@@ -273,16 +273,27 @@ export default function HomePage() {
               {isLoading && (
                 <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               )}
-              {isLoading ? 'Analyzing Your Idea...' : 'Analyze My Business Idea ✨'}
+              {isLoading ? 'Crunching Your Numbers...' : 'Show Me My Numbers'}
             </button>
+
+            <div className="mt-4 text-center text-sm text-gray-600">
+              Takes &lt;30 seconds • No signup required
+            </div>
 
             {!isLoading && hasCompletedAnalysis && (
               <div className="flex items-center justify-center gap-2 text-green-600 mt-4">
                 <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="font-medium">Analysis complete! Check out your numbers below 👇</span>
+                <span className="font-medium">Numbers ready! Check out your break-even below 👇</span>
               </div>
             )}
           </div>
+        </div>
+
+        {/* Trust Booster */}
+        <div className="text-center mt-8">
+          <p className="text-sm text-gray-500">
+            Trusted by founders, students, and business advisors worldwide
+          </p>
         </div>
       </section>
 
@@ -293,7 +304,7 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 flex items-center justify-center">
               <span className="text-white font-bold">📊</span>
             </div>
-            <h2 className="text-xl font-semibold text-gray-800">Business Parameters</h2>
+            <h2 className="text-xl font-semibold text-gray-800">Your Business Inputs</h2>
           </div>
           <div className="space-y-4">
             <input
@@ -366,7 +377,7 @@ export default function HomePage() {
             <div className="w-10 h-10 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 flex items-center justify-center">
               <span className="text-white font-bold">📊</span>
             </div>
-            <h2 className="text-xl font-semibold text-gray-800">Financial Results</h2>
+            <h2 className="text-xl font-semibold text-gray-800">Your Break-Even Numbers</h2>
           </div>
           <div className="space-y-6">
             <ResultsTable
