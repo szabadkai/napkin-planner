@@ -3,6 +3,9 @@ import { extractJson } from "@/lib/parse";
 import { ResearchResult } from "@/lib/types";
 import { SYSTEM_PROMPT } from "@/lib/system_prompt";
 
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
 type ReqBody = {
   prompt: string;
   locale?: string;
