@@ -2,8 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   turbopack: {
-    // Prevent mis-detection of root when multiple lockfiles exist outside the repo.
-    root: ".",
+    // Use an absolute root path to satisfy Next.js in all environments (incl. Vercel).
+    root: process.cwd(),
   },
 };
 
