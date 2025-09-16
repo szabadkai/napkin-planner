@@ -1,0 +1,78 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0b0b12;
+  --foreground: #e7e7ea;
+  --card-bg: rgba(255, 255, 255, 0.06);
+  --card-border: rgba(255, 255, 255, 0.12);
+  --shadow: 0 10px 30px rgba(0,0,0,0.35);
+  --accent-1: #7c3aed; /* violet-600 */
+  --accent-2: #06b6d4; /* cyan-500 */
+  --accent-3: #22c55e; /* green-500 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "liga" 1, "calt" 1;
+  background:
+    radial-gradient(1200px 800px at 85% -10%, rgba(124, 58, 237, 0.25), transparent 60%),
+    radial-gradient(900px 600px at -10% 20%, rgba(6, 182, 212, 0.22), transparent 60%),
+    radial-gradient(1000px 700px at 50% 110%, rgba(34, 197, 94, 0.16), transparent 60%),
+    linear-gradient(180deg, #0b0b12, #0b0b12);
+  min-height: 100vh;
+}
+
+.glass {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--shadow);
+  backdrop-filter: saturate(140%) blur(14px);
+}
+
+.btn-gradient {
+  background-image: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+  color: white;
+  border: 1px solid rgba(255,255,255,0.15);
+  box-shadow: 0 8px 18px rgba(124, 58, 237, 0.35);
+  transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+}
+.btn-gradient:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(124,58,237,0.45); }
+.btn-gradient:active { transform: translateY(0); }
+.btn-disabled { opacity: 0.6; cursor: not-allowed; }
+
+.input-like {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: var(--foreground);
+  outline: none;
+  transition: box-shadow 150ms ease, border-color 150ms ease;
+}
+.input-like:focus {
+  border-color: rgba(124, 58, 237, 0.6);
+  box-shadow: 0 0 0 4px rgba(124,58,237,0.22);
+}
+
+.title-gradient {
+  background: linear-gradient(90deg, #e5e7eb, #a78bfa, #67e8f9);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.pill {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  padding: 6px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  line-height: 1;
+}

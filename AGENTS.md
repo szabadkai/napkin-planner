@@ -1,38 +1,37 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- Root docs: `PRD.md` (product requirements) and `tech_specs.md` (technical design).
-- Environment files: `.env.local.example` (template) → copy to `.env.local` for local secrets.
-- Git-only repo today (no `src/` yet). If code is added, use `src/` for app code, `docs/` for extended documentation, and `tests/` for automated tests.
+- Root: configuration and docs. Notable files: `system_prompt.md`, `.env.local`, `.env.local.example`.
+- Recommended layout as the codebase grows:
+  - `src/`: application code (modules by feature or domain).
+  - `tests/`: mirrors `src/` structure for unit/integration tests.
+  - `assets/` or `public/`: static files if needed.
+- Keep prompts/specs in `docs/` or alongside code with clear names.
 
 ## Build, Test, and Development Commands
-- Docs-only at present: no build step required.
-- Optional linting (recommended):
-  - `npx markdownlint .` — lint Markdown files.
-  - `npx prettier --check .` — verify formatting.
-  - `npx prettier --write .` — format in place.
-  If you use these tools, include config in the repo before enforcing.
+- Environment: copy example env to local before running anything.
+  - `cp .env.local.example .env.local`
+- No project-specific scripts are defined yet. Suggested patterns to adopt:
+  - Build: `make build` or `npm run build` (compile/bundle if applicable).
+  - Test: `pytest -q` (Python) or `npm test`/`vitest run` (Node) once configured.
+  - Run: `python -m src.main` or `node src/index.js` depending on stack.
 
 ## Coding Style & Naming Conventions
-- Markdown: wrap at ~100 chars, use ATX headings (`#`, `##`), and sentence‑case headings.
-- Files: kebab-case for docs (e.g., `design-notes.md`).
-- Lists: prefer `-` for bullets; keep lines concise.
-- Code (when added): 2‑space indentation, descriptive names, and small, focused modules under `src/`.
-- Tools (optional): Prettier for Markdown and code; EditorConfig for basic whitespace.
+- Indentation: 2 spaces (JS/TS) or 4 spaces (Python). Be consistent within a language.
+- Naming: `snake_case` for files in Python, `kebab-case` for web assets, `PascalCase` for classes, `camelCase` for functions/vars.
+- Formatting: adopt a formatter per language (e.g., Black for Python, Prettier for JS/TS) and run before committing.
 
 ## Testing Guidelines
-- No framework in use yet. When code is introduced:
-  - Place tests in `tests/` mirroring `src/` paths.
-  - Name tests `*.test.[js|ts|py|rs]` as applicable.
-  - Aim for meaningful coverage on core logic; avoid brittle UI tests.
-  - Run tests in CI before merging.
+- Place tests under `tests/` mirroring `src/` paths.
+- Names: `test_*.py` (pytest) or `*.spec.ts`/`*.test.ts` (JS/TS).
+- Aim for meaningful unit tests; add integration tests for key flows. Target 80%+ coverage once frameworks are in place.
 
 ## Commit & Pull Request Guidelines
-- Commits: follow Conventional Commits, e.g., `feat: add roadmap section` or `docs: clarify env setup`.
-- Branches: `feat/<short-name>`, `fix/<short-name>`, `docs/<short-name>`.
-- PRs: include purpose, scope, linked issues, and screenshots for UX/docs changes. Keep PRs small and focused.
+- Current history is minimal and unconstrained. Prefer Conventional Commits:
+  - Example: `feat(planner): add task grouping rules`.
+- Commits: small, scoped, with clear body explaining why.
+- PRs: include purpose, summary of changes, screenshots or logs if UI/CLI, and linked issues. Add testing notes and any config changes (`.env` keys, migrations).
 
 ## Security & Configuration Tips
-- Never commit real secrets. Use `.env.local` locally and update `.env.local.example` with non‑secret keys.
-- Remove credentials from crash logs or screenshots.
-- If adding dependencies, prefer vetted, maintained packages and pin versions.
+- Do not commit secrets. Keep local secrets in `.env.local` (already git-ignored). Update `.env.local.example` when adding new required keys.
+- Validate inputs and avoid logging sensitive data.
