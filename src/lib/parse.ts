@@ -1,6 +1,6 @@
 // Utilities to extract JSON from LLM text responses
 
-export function extractJson<T = any>(text: string): T | null {
+export function extractJson<T = unknown>(text: string): T | null {
   // Try fenced code block first
   const fence = /```(?:json)?\n([\s\S]*?)\n```/i.exec(text);
   if (fence) {
@@ -19,4 +19,3 @@ export function extractJson<T = any>(text: string): T | null {
   }
   return null;
 }
-

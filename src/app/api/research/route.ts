@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { extractJson } from "@/lib/parse";
 import { ResearchResult } from "@/lib/types";
-import { readFile } from "node:fs/promises";
+import { SYSTEM_PROMPT } from "@/lib/system_prompt";
 
 type ReqBody = {
   prompt: string;
@@ -31,28 +31,34 @@ async function callGemini(systemPrompt: string, userPrompt: string, apiKey: stri
   if (!res.ok) {
     throw new Error(`Gemini API error: ${res.status} ${res.statusText}`);
   }
-  const data = await res.json();
-  const text = data?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text || "").join("\n") || "";
+  type GeminiPart = { text?: string };
+  type GeminiContent = { parts?: GeminiPart[] };
+  type GeminiCandidate = { content?: GeminiContent };
+  const data = (await res.json()) as { candidates?: GeminiCandidate[] };
+  const text = (data?.candidates?.[0]?.content?.parts ?? [])
+    .map((p) => p?.text || "")
+    .join("\n");
   return text;
 }
 
-function normalizeResult(raw: any): ResearchResult {
-  const num = (v: any) => (typeof v === "number" ? v : parseFloat(String(v ?? 0))) || 0;
-  const int = (v: any) => (typeof v === "number" ? Math.round(v) : parseInt(String(v ?? 0))) || 0;
+function normalizeResult(raw: unknown): ResearchResult {
+  const r = raw as Record<string, unknown> | null | undefined;
+  const num = (v: unknown) => (typeof v === "number" ? v : parseFloat(String(v ?? 0))) || 0;
+  const int = (v: unknown) => (typeof v === "number" ? Math.round(v) : parseInt(String(v ?? 0))) || 0;
   return {
-    business_idea: String(raw.business_idea ?? "Untitled business"),
-    location: String(raw.location ?? ""),
-    average_price: num(raw.average_price),
-    gross_margin_percent: num(raw.gross_margin_percent),
-    fixed_monthly_costs_total: num(raw.fixed_monthly_costs_total),
-    rent_monthly: num(raw.rent_monthly),
-    salaries_monthly: num(raw.salaries_monthly),
-    utilities_monthly: num(raw.utilities_monthly),
-    other_fixed_costs_monthly: num(raw.other_fixed_costs_monthly),
-    variable_cost_per_unit: num(raw.variable_cost_per_unit),
-    variable_cost_assumptions: String(raw.variable_cost_assumptions ?? ""),
-    target_customers: int(raw.target_customers),
-    business_analysis: String(raw.business_analysis ?? ""),
+    business_idea: String(r?.business_idea ?? "Untitled business"),
+    location: String(r?.location ?? ""),
+    average_price: num(r?.average_price),
+    gross_margin_percent: num(r?.gross_margin_percent),
+    fixed_monthly_costs_total: num(r?.fixed_monthly_costs_total),
+    rent_monthly: num(r?.rent_monthly),
+    salaries_monthly: num(r?.salaries_monthly),
+    utilities_monthly: num(r?.utilities_monthly),
+    other_fixed_costs_monthly: num(r?.other_fixed_costs_monthly),
+    variable_cost_per_unit: num(r?.variable_cost_per_unit),
+    variable_cost_assumptions: String(r?.variable_cost_assumptions ?? ""),
+    target_customers: int(r?.target_customers),
+    business_analysis: String(r?.business_analysis ?? ""),
   };
 }
 
@@ -92,7 +98,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing prompt" }, { status: 400 });
     }
 
-    const systemPrompt = await readFile(process.cwd() + "/system_prompt.md", "utf8");
+    const systemPrompt = SYSTEM_PROMPT;
 
     const locale = body.locale || req.headers.get("x-user-locale") || "";
     const region = body.region || req.headers.get("x-user-region") || "";
@@ -118,7 +124,7 @@ export async function POST(req: NextRequest) {
         const text = await callGemini(systemPrompt, composedUser, apiKey);
         const json = extractJson(text);
         result = json ? normalizeResult(json) : stubFromPrompt(body.prompt, location);
-      } catch (e) {
+      } catch {
         // Fallback to stub if API fails
         result = stubFromPrompt(body.prompt, location);
       }
@@ -138,7 +144,8 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({ ok: true, data: result });
-  } catch (err: any) {
-    return NextResponse.json({ error: err?.message || "Unknown error" }, { status: 500 });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -28,7 +28,10 @@ function NumberField({
         step={step}
         className="input-like flex-1 rounded-xl px-3 py-2"
         value={Number.isFinite(value) ? value : 0}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
+        onChange={(e) => {
+          const v = e.target.value;
+          onChange(v === "" ? 0 : parseFloat(v));
+        }}
       />
     </label>
   );
@@ -46,10 +49,12 @@ function SimpleChart({
   const padding = 32;
   const xs = series.map((d) => d.month);
   const ys = series.map((d) => d.cumulativeProfit);
+  const ysClean = ys.filter((n) => Number.isFinite(n)) as number[];
+  const yVals = ysClean.length ? ysClean : [0];
   const xMin = Math.min(...xs);
   const xMax = Math.max(...xs);
-  const yMin = Math.min(0, ...ys);
-  const yMax = Math.max(0, ...ys);
+  const yMin = Math.min(0, ...yVals);
+  const yMax = Math.max(0, ...yVals);
   const xScale = (m: number) =>
     padding + ((m - xMin) / (xMax - xMin)) * (width - padding * 2);
   const yScale = (v: number) =>
@@ -97,8 +102,8 @@ function SimpleChart({
       )}
 
       {/* Y max/min labels */}
-      <text x={8} y={yScale(yMax)} fontSize={10} fill="rgba(255,255,255,0.6)">{Math.round(yMax)}</text>
-      <text x={8} y={yScale(yMin)} fontSize={10} fill="rgba(255,255,255,0.6)">{Math.round(yMin)}</text>
+      <text x={8} y={yScale(yMax)} fontSize={10} fill="rgba(255,255,255,0.6)">{Number.isFinite(yMax) ? Math.round(yMax) : 0}</text>
+      <text x={8} y={yScale(yMin)} fontSize={10} fill="rgba(255,255,255,0.6)">{Number.isFinite(yMin) ? Math.round(yMin) : 0}</text>
     </svg>
   );
 }
@@ -108,7 +113,8 @@ function ScoreRing({ value }: { value: number }) {
   const stroke = 14;
   const radius = (size - stroke) / 2;
   const c = Math.PI * 2 * radius;
-  const pct = Math.max(0, Math.min(100, value));
+  const safe = Number.isFinite(value) ? value : 0;
+  const pct = Math.max(0, Math.min(100, safe));
   const dash = (pct / 100) * c;
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -131,7 +137,7 @@ function ScoreRing({ value }: { value: number }) {
           transform="rotate(-90)"
         />
         <text x={0} y={4} fontSize={28} textAnchor="middle" fill="#fff" fontWeight={600}>
-          {Math.round(pct)}
+          {Number.isFinite(pct) ? Math.round(pct) : 0}
         </text>
         <text x={0} y={24} fontSize={11} textAnchor="middle" fill="rgba(255,255,255,0.7)">/100</text>
       </g>
@@ -151,7 +157,7 @@ export default function Home() {
       const locale = navigator.language || "";
       if (!location) setLocation(tz.split("/").pop() || locale);
     } catch {}
-  }, []);
+  }, [location]);
 
   const viability = useMemo(() => {
     if (!state.data) return null;
@@ -166,11 +172,12 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt, location }),
       });
-      const json = await res.json();
+      const json = (await res.json()) as { ok?: boolean; data?: ResearchResult; error?: string };
       if (!res.ok || !json?.ok) throw new Error(json?.error || "Failed");
       setState({ loading: false, data: json.data });
-    } catch (e: any) {
-      setState({ loading: false, error: e?.message || "Request failed" });
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Request failed";
+      setState({ loading: false, error: message });
     }
   };
 
@@ -258,8 +265,8 @@ export default function Home() {
                     <ScoreRing value={viability.viabilityScore} />
                   </div>
                   <div className="space-y-2 text-sm">
-                    <div className="text-white/80">Contribution per unit: <b className="text-white">{Math.round(viability.contributionPerUnit)}</b></div>
-                    <div className="text-white/80">Monthly net profit: <b className="text-white">{Math.round(viability.monthlyNetProfit)}</b></div>
+                    <div className="text-white/80">Contribution per unit: <b className="text-white">{Number.isFinite(viability.contributionPerUnit) ? Math.round(viability.contributionPerUnit) : 0}</b></div>
+                    <div className="text-white/80">Monthly net profit: <b className="text-white">{Number.isFinite(viability.monthlyNetProfit) ? Math.round(viability.monthlyNetProfit) : 0}</b></div>
                     <div className="text-white/80">Break-even customers/month: <b className="text-white">{viability.breakEvenCustomersPerMonth ? Math.ceil(viability.breakEvenCustomersPerMonth) : "—"}</b></div>
                   </div>
                 </div>
